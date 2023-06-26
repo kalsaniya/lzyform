@@ -445,15 +445,39 @@ function ForRent() {
 }
 
 function ForSale() {
-  const [file, setFile] = useState();
-  function handleChange(e) {
-    console.log(e.target.files);
-    setFile(URL.createObjectURL(e.target.files[0]));
-  }
-
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [fileList, setFileList] = useState([]);
+  const handleCancel = () => setPreviewOpen(false);
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
+    }
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+    setPreviewTitle(
+      file.name || file.url.substring(file.url.lastIndexOf("/") + 1)
+    );
+  };
+  const handleChange = ({ fileList: newFileList }) => setFileList(newFileList);
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div
+        style={{
+          marginTop: 8,
+        }}
+      >
+        Upload
+      </div>
+    </div>
+  );
   return (
     <div
       style={{
+        width: "80%",
+        height: "auto",
         border: "2px solid gray",
         padding: "20px",
         borderRadius: "10px",
@@ -571,17 +595,21 @@ function ForSale() {
               <option>South</option>
             </select>
           </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            <label>Title*</label>
-            <input type="text" placeholder="Name" />
-          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          <label>Title*</label>
+          <input type="text" placeholder="Name" />
         </div>
 
         <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <label>Description</label>
-            <textarea type="text" placeholder="Description" />
+            <textarea
+              type="text"
+              placeholder="Description"
+              rows="4"
+              cols="50"
+            />
           </div>
         </div>
 
@@ -595,9 +623,14 @@ function ForSale() {
             <input type="number" placeholder="1" />
           </div>
         </div>
-
         <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+            }}
+          >
             <Form.Item
               label="Upload"
               valuePropName="fileList"
@@ -652,6 +685,42 @@ function ForSale() {
           </div>
         </div>
 
+        <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <Upload
+              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+              listType="picture-card"
+              fileList={fileList}
+              onPreview={handlePreview}
+              onChange={handleChange}
+            >
+              {fileList.length >= 1 ? null : uploadButton}
+            </Upload>
+            <Modal
+              open={previewOpen}
+              title={previewTitle}
+              footer={null}
+              onCancel={handleCancel}
+            >
+              <img
+                alt="example"
+                style={{
+                  width: "100%",
+                }}
+                src={previewImage}
+              />
+            </Modal>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label>Name</label>
+            <input type="text" placeholder="Name" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label>Mobile</label>
+            <input type="mobile" placeholder="mobile" />
+          </div>
+        </div>
         <div>
           <button
             type="submit"
@@ -659,7 +728,6 @@ function ForSale() {
               padding: "9px 100px",
               fontWeight: "bold",
               fontSize: "15px",
-
               background: "transparent",
               border: "2px solid brown",
               borderRadius: "5px",
